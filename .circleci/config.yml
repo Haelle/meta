@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+       - image: circleci/ruby:2.5.1-node-browsers
+         environment:
+            - GEMS_SOURCE=local
+    working_directory: ~/trailblazer
+
+    steps:
+       - checkout
+       - run:
+           name: Fetch submodules
+           command: git submodule init && git submodule update
+       - run:
+           name: Install ruby dependencies
+           command: git submodule foreach bundle install
+
