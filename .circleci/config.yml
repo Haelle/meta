@@ -1,8 +1,7 @@
 version: 2
 jobs:
-  build:
+  bundle_dependencies:
     docker:
-      # specify the version you desire here
        - image: circleci/ruby:2.5.1-node-browsers
          environment:
             - GEMS_SOURCE=local
@@ -15,13 +14,53 @@ jobs:
            command: git submodule init && git submodule update
        - restore_cache:
               keys:
-               - v1-dependencies
+               - bundle-v1-dependencies
        - run:
            name: Install ruby dependencies
-           command: git submodule foreach 'bundle check || bundle install'
+           command: git submodule foreach 'bundle check --path ~/trailblazer/bundle || bundle install --path ~/trailblazer/bundle'
        - save_cache:
-              paths:
-               - /usr/local/bundle
-              key: v1-dependencies
+           paths:
+             - ~/bundle
+           key: bundle-v1-dependencies
+       - persist_to_workspace:
+           root: ..
+           paths:
+              - trailblazer
+  cells:
+   docker:
+      - image: circleci/ruby:2.5.1-node-browsers
+        environment:
+           - GEMS_SOURCE=local
+   working_directory: ~/trailblazer
+   steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+         name: Run Test
+         command: cd cells && bundle exec rake
+
+  cells-erb:
+     docker:
+        - image: circleci/ruby:2.5.1-node-browsers
+          environment:
+             - GEMS_SOURCE=local
+     working_directory: ~/trailblazer
+     steps:
+        - attach_workspace:
+            at: ~/
+        - run:
+           name: Run Test
+           command: cd cells-erb && bundle exec rake
 
 
+workflows:
+  version: 2
+  build:
+    jobs:
+      - bundle_dependencies
+      - cells:
+          requires:
+            - bundle_dependencies
+      - cells-erb:
+          requires:
+            - cells
