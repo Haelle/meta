@@ -85,3 +85,6 @@
 [submodule "cells-template"]
 	path = cells-template
 	url = git@github.com:trailblazer/cells-template.git
+[submodule "representable"]
+	path = representable
+	url = git@github.com:trailblazer/representable
